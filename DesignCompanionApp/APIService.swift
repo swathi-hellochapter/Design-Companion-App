@@ -19,6 +19,7 @@ class APIService: ObservableObject {
 
     func submitDesignRequest(lidarData: LIDARData, styleReference: StyleReference, referenceImages: [Data]) async throws -> String {
         print("🚀 === APIService.submitDesignRequest STARTED ===")
+
         print("📋 LIDAR Data Details:")
         print("   Room Type: \(lidarData.roomType)")
         print("   Dimensions: \(lidarData.roomDimensions.width) x \(lidarData.roomDimensions.depth) x \(lidarData.roomDimensions.height)m")
@@ -126,11 +127,12 @@ class APIService: ObservableObject {
     }
 
     private func uploadSingleImageToSupabase(data: Data, fileName: String) async throws -> String {
-        let uploadURL = "\(supabaseURL)/storage/v1/object/\(Config.Storage.bucket)/\(fileName)"
+        let uploadURL = "\(supabaseURL)/storage/v1/object/\(Config.Storage.referenceBucket)/\(fileName)"
 
         var request = URLRequest(url: URL(string: uploadURL)!)
         request.httpMethod = "POST"
         request.setValue("Bearer \(supabaseKey)", forHTTPHeaderField: "Authorization")
+        request.setValue(supabaseKey, forHTTPHeaderField: "apikey")
         request.setValue("image/jpeg", forHTTPHeaderField: "Content-Type")
         request.setValue("public", forHTTPHeaderField: "x-upsert")
         request.httpBody = data
@@ -144,7 +146,7 @@ class APIService: ObservableObject {
         print("📤 Upload response status: \(httpResponse.statusCode)")
 
         if httpResponse.statusCode == 200 || httpResponse.statusCode == 201 {
-            let publicURL = "\(supabaseURL)/storage/v1/object/public/\(Config.Storage.bucket)/\(fileName)"
+            let publicURL = "\(supabaseURL)/storage/v1/object/public/\(Config.Storage.referenceBucket)/\(fileName)"
             return publicURL
         } else {
             print("❌ Upload failed with status: \(httpResponse.statusCode)")
@@ -161,6 +163,7 @@ class APIService: ObservableObject {
         var urlRequest = URLRequest(url: URL(string: endpoint)!)
         urlRequest.httpMethod = "POST"
         urlRequest.setValue("Bearer \(supabaseKey)", forHTTPHeaderField: "Authorization")
+        urlRequest.setValue(supabaseKey, forHTTPHeaderField: "apikey")
         urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
         urlRequest.setValue("application/json", forHTTPHeaderField: "Accept")
         urlRequest.setValue("return=representation", forHTTPHeaderField: "Prefer")
@@ -247,6 +250,7 @@ class APIService: ObservableObject {
         var request = URLRequest(url: URL(string: queryURL)!)
         request.httpMethod = "GET"
         request.setValue("Bearer \(supabaseKey)", forHTTPHeaderField: "Authorization")
+        request.setValue(supabaseKey, forHTTPHeaderField: "apikey")
         request.setValue("application/json", forHTTPHeaderField: "Accept")
 
         let (data, response) = try await URLSession.shared.data(for: request)
@@ -296,6 +300,7 @@ class APIService: ObservableObject {
         var request = URLRequest(url: URL(string: endpoint)!)
         request.httpMethod = "GET"
         request.setValue("Bearer \(supabaseKey)", forHTTPHeaderField: "Authorization")
+        request.setValue(supabaseKey, forHTTPHeaderField: "apikey")
 
         let (_, response) = try await URLSession.shared.data(for: request)
 
