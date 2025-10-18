@@ -1,4 +1,5 @@
 import SwiftUI
+import RoomPlan
 
 struct ContentView: View {
     var body: some View {
@@ -54,15 +55,38 @@ struct ContentView: View {
                     Spacer()
 
                     // Get Started Button
-                    NavigationLink(destination: StyleInputView()) {
-                        Text("Start Your Design Journey")
-                            .font(.headline)
-                            .fontWeight(.semibold)
-                            .foregroundColor(.white)
-                            .padding()
-                            .frame(maxWidth: .infinity)
-                            .background(ChapterColors.accent)
-                            .cornerRadius(25)
+                    Group {
+                        if #available(iOS 16.0, *) {
+                            NavigationLink(destination: RoomScanView { capturedRoom in
+                                // Navigate to style input after successful scan
+                                print("Room scan completed, navigating to style input...")
+                            }) {
+                                Text("Start Your Design Journey")
+                                    .font(.headline)
+                                    .fontWeight(.semibold)
+                                    .foregroundColor(.white)
+                                    .padding()
+                                    .frame(maxWidth: .infinity)
+                                    .background(ChapterColors.accent)
+                                    .cornerRadius(25)
+                            }
+                        } else {
+                            NavigationLink(destination: StyleInputView()) {
+                                VStack {
+                                    Text("Start Your Design Journey")
+                                        .font(.headline)
+                                        .fontWeight(.semibold)
+                                        .foregroundColor(.white)
+                                    Text("(LiDAR requires iOS 16+)")
+                                        .font(.caption)
+                                        .foregroundColor(.white.opacity(0.8))
+                                }
+                                .padding()
+                                .frame(maxWidth: .infinity)
+                                .background(ChapterColors.accent)
+                                .cornerRadius(25)
+                            }
+                        }
                     }
                     .padding(.horizontal, 32)
                     .padding(.bottom, 40)
