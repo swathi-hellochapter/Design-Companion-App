@@ -49,12 +49,14 @@ class RoomPlanCoordinator: NSObject, RoomCaptureViewDelegate {
             if let error = error {
                 print("❌ RoomPlan processing error: \(error)")
                 self.scanError.wrappedValue = error.localizedDescription
+                self.isPresented.wrappedValue = false
             } else {
                 print("✅ RoomPlan: Successfully captured room")
+                // Let RoomPlan finish naturally - the 3D animation happens here automatically
                 self.scanResult.wrappedValue = processedResult
                 NotificationCenter.default.post(name: .roomScanCompleted, object: processedResult)
+                self.isPresented.wrappedValue = false
             }
-            self.isPresented.wrappedValue = false
         }
     }
 }
@@ -173,8 +175,9 @@ struct RoomScannerWithControls: View {
     private func stopScanAndFinish() {
         print("🏠 Stopping capture session...")
         if let captureView = captureView {
+            print("🏠 ⏱️ Letting scan complete naturally with extended animation...")
             captureView.captureSession.stop()
-            print("🏠 ✅ Capture session stopped - processing results...")
+            print("🏠 ✅ Capture session stopped - RoomPlan will now show extended 3D animation...")
         } else {
             print("🏠 ❌ No capture view reference - just closing")
             isPresented = false
@@ -311,14 +314,169 @@ struct RoomScanView: View {
 @available(iOS 16.0, *)
 struct StyleInputViewWithRoom: View {
     let capturedRoom: CapturedRoom
+    @State private var showingSummary = true
 
     var body: some View {
-        StyleInputView()
-            .onAppear {
-                print("🏠 ✅ Navigated to StyleInputView with scanned room data!")
-                let roomData = RoomScanData(from: capturedRoom)
-                print("🏠 📊 Room description: \(roomData.roomDescription)")
+        if showingSummary {
+            RoomScanSummaryView(capturedRoom: capturedRoom) {
+                showingSummary = false
             }
+        } else {
+            StyleInputView()
+                .onAppear {
+                    print("🏠 ✅ Navigated to StyleInputView with scanned room data!")
+                    let roomData = RoomScanData(from: capturedRoom)
+                    print("🏠 📊 Room description: \(roomData.roomDescription)")
+                }
+        }
+    }
+}
+
+
+@available(iOS 16.0, *)
+struct RoomScanSummaryView: View {
+    let capturedRoom: CapturedRoom
+    let onContinue: () -> Void
+    @State private var roomData: RoomScanData
+
+    init(capturedRoom: CapturedRoom, onContinue: @escaping () -> Void) {
+        self.capturedRoom = capturedRoom
+        self.onContinue = onContinue
+        self._roomData = State(initialValue: RoomScanData(from: capturedRoom))
+    }
+
+    var body: some View {
+        VStack(spacing: 30) {
+            Spacer()
+
+            // Success Header
+            VStack(spacing: 15) {
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.system(size: 60))
+                    .foregroundColor(ChapterColors.success)
+
+                Text("Room Scan Complete!")
+                    .font(.title2)
+                    .fontWeight(.bold)
+                    .foregroundColor(ChapterColors.text)
+
+                Text("Here's what we discovered about your space")
+                    .font(.body)
+                    .foregroundColor(ChapterColors.secondaryText)
+                    .multilineTextAlignment(.center)
+            }
+
+            // Room Details Card
+            VStack(spacing: 20) {
+                // Room Type
+                HStack {
+                    Image(systemName: "house.fill")
+                        .foregroundColor(ChapterColors.accent)
+                        .frame(width: 24)
+
+                    Text("Room Type:")
+                        .foregroundColor(ChapterColors.secondaryText)
+
+                    Spacer()
+
+                    Text(roomData.roomType.replacingOccurrences(of: "_", with: " ").capitalized)
+                        .fontWeight(.semibold)
+                        .foregroundColor(ChapterColors.text)
+                }
+
+                Divider()
+
+                // Dimensions
+                HStack {
+                    Image(systemName: "ruler")
+                        .foregroundColor(ChapterColors.accent)
+                        .frame(width: 24)
+
+                    Text("Dimensions:")
+                        .foregroundColor(ChapterColors.secondaryText)
+
+                    Spacer()
+
+                    Text("\(String(format: "%.1f", roomData.dimensions.width))m × \(String(format: "%.1f", roomData.dimensions.depth))m × \(String(format: "%.1f", roomData.dimensions.height))m")
+                        .fontWeight(.semibold)
+                        .foregroundColor(ChapterColors.text)
+                }
+
+                Divider()
+
+                // Floor Area
+                HStack {
+                    Image(systemName: "square.grid.3x1.folder.badge.plus")
+                        .foregroundColor(ChapterColors.accent)
+                        .frame(width: 24)
+
+                    Text("Floor Area:")
+                        .foregroundColor(ChapterColors.secondaryText)
+
+                    Spacer()
+
+                    Text("\(String(format: "%.1f", roomData.dimensions.area)) sq m")
+                        .fontWeight(.semibold)
+                        .foregroundColor(ChapterColors.text)
+                }
+
+                Divider()
+
+                // Features
+                HStack {
+                    Image(systemName: "cube.box")
+                        .foregroundColor(ChapterColors.accent)
+                        .frame(width: 24)
+
+                    Text("Features:")
+                        .foregroundColor(ChapterColors.secondaryText)
+
+                    Spacer()
+
+                    VStack(alignment: .trailing, spacing: 4) {
+                        Text("\(roomData.features.walls) walls, \(roomData.features.doors) doors")
+                            .fontWeight(.semibold)
+                            .foregroundColor(ChapterColors.text)
+                        Text("\(roomData.features.windows) windows, \(roomData.features.openings) openings")
+                            .fontWeight(.semibold)
+                            .foregroundColor(ChapterColors.text)
+                    }
+                }
+            }
+            .padding(24)
+            .background(ChapterColors.cardBackground)
+            .cornerRadius(20)
+            .overlay(
+                RoundedRectangle(cornerRadius: 20)
+                    .stroke(ChapterColors.border, lineWidth: 1)
+            )
+            .padding(.horizontal)
+
+            Spacer()
+
+            // Continue Button
+            Button(action: {
+                print("🏠 User tapped 'Let's Style This Room'")
+                onContinue()
+            }) {
+                HStack {
+                    Image(systemName: "paintbrush.fill")
+                    Text("Let's Style This Room")
+                        .fontWeight(.semibold)
+                }
+                .font(.headline)
+                .foregroundColor(.white)
+                .padding()
+                .frame(maxWidth: .infinity)
+                .background(ChapterColors.accent)
+                .cornerRadius(25)
+            }
+            .padding(.horizontal, 32)
+            .padding(.bottom, 40)
+        }
+        .background(ChapterColors.background)
+        .navigationTitle("Scan Results")
+        .navigationBarTitleDisplayMode(.inline)
     }
 }
 

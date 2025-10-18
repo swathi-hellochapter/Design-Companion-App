@@ -194,8 +194,51 @@ struct RoomScanData {
     // MARK: - Room Analysis Methods
 
     private static func determineRoomType(from room: CapturedRoom) -> String {
-        // Use RoomPlan's category if available, otherwise default
-        return "living_room" // RoomPlan may provide category in future updates
+        // Use RoomPlan's sections to detect room type (iOS 17+)
+        if #available(iOS 17.0, *) {
+            // Check if room has sections with labels
+            for section in room.sections {
+                switch section.label {
+                case .bedroom:
+                    print("🏠 ✅ Detected room type: bedroom")
+                    return "bedroom"
+                case .kitchen:
+                    print("🏠 ✅ Detected room type: kitchen")
+                    return "kitchen"
+                case .bathroom:
+                    print("🏠 ✅ Detected room type: bathroom")
+                    return "bathroom"
+                case .diningRoom:
+                    print("🏠 ✅ Detected room type: dining_room")
+                    return "dining_room"
+                case .livingRoom:
+                    print("🏠 ✅ Detected room type: living_room")
+                    return "living_room"
+                @unknown default:
+                    print("🏠 ⚠️ Unknown room section detected")
+                    break
+                }
+            }
+        }
+
+        // Fallback: Try to infer from room characteristics
+        let roomArea: Float
+        if let firstWall = room.walls.first {
+            roomArea = firstWall.dimensions.x * firstWall.dimensions.z
+        } else {
+            roomArea = 0
+        }
+        print("🏠 ⚠️ No room sections detected, using fallback detection")
+        print("🏠 📏 Room area: \(roomArea) sq m")
+
+        // Basic inference based on size and features
+        if roomArea < 8 {
+            return "bathroom"
+        } else if roomArea < 15 {
+            return "bedroom"
+        } else {
+            return "living_room"
+        }
     }
 
     private static func extractDimensions(from room: CapturedRoom) -> RoomDimensions {
