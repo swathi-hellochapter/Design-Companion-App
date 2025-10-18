@@ -322,7 +322,7 @@ struct StyleInputViewWithRoom: View {
                 showingSummary = false
             }
         } else {
-            StyleInputView()
+            StyleInputView(scannedRoomData: RoomScanData(from: capturedRoom))
                 .onAppear {
                     print("🏠 ✅ Navigated to StyleInputView with scanned room data!")
                     let roomData = RoomScanData(from: capturedRoom)

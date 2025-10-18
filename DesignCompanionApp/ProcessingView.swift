@@ -6,6 +6,7 @@ struct ProcessingView: View {
     let pinterestLink: String
     let styleKeywords: [String]
     let userThoughts: String
+    let scannedRoomData: RoomScanData?
     
     @State private var isProcessing = true
     @State private var processingStep = 0
@@ -41,7 +42,12 @@ struct ProcessingView: View {
         .onAppear {
             print("🚀 ProcessingView appeared - starting design generation process")
             print("📋 Input Summary:")
-            print("   📐 Room: Demo room (4.0×3.0×2.8m)")
+            if let roomData = scannedRoomData {
+                print("   📐 Room: REAL \(roomData.roomType) (\(String(format: "%.1f", roomData.dimensions.width))×\(String(format: "%.1f", roomData.dimensions.depth))×\(String(format: "%.1f", roomData.dimensions.height))m)")
+                print("   📏 Area: \(String(format: "%.1f", roomData.dimensions.area)) sq m")
+            } else {
+                print("   📐 Room: Demo room (4.0×3.0×2.8m)")
+            }
             print("   🖼️ Images: \(images.count)")
             print("   🏷️ Keywords: \(styleKeywords)")
             print("   📱 Instagram: \(!instagramLink.isEmpty)")
@@ -294,15 +300,35 @@ struct ProcessingView: View {
                 }
                 print("✅ Converted \(imageDataArray.count) images to data (sizes: \(imageDataArray.map { $0.count }))")
                 
-                print("🔄 Step 3/4: Creating demo LIDAR data for submission...")
-                // Create demo room data since we removed actual LiDAR scanning
-                let demoRoomDimensions = RoomDimensions(width: 4.0, height: 2.8, depth: 3.0)
-                let demoLidarData = LIDARData(roomDimensions: demoRoomDimensions, roomType: "living_room")
-                print("✅ Demo LIDAR data created: \(demoRoomDimensions.width)x\(demoRoomDimensions.depth)x\(demoRoomDimensions.height)m")
+                print("🔄 Step 3/4: Using scanned room data for submission...")
+
+                let lidarData: LIDARData
+                if let roomData = scannedRoomData {
+                    // Use real scanned room data with spatial layout
+                    let spatialLayout = roomData.getSimplifiedSpatialLayout()
+                    lidarData = LIDARData(
+                        roomDimensions: roomData.dimensions,
+                        roomType: roomData.roomType,
+                        roomFeatures: roomData.features,
+                        spatialLayout: spatialLayout
+                    )
+                    print("✅ Using REAL scanned room data with spatial layout:")
+                    print("   🏠 Room Type: \(roomData.roomType)")
+                    print("   📏 Dimensions: \(roomData.dimensions.width)x\(roomData.dimensions.depth)x\(roomData.dimensions.height)m")
+                    print("   📐 Area: \(roomData.dimensions.area) sq m")
+                    print("   🏗️ Features: \(roomData.features.walls) walls, \(roomData.features.doors) doors, \(roomData.features.windows) windows")
+                    print("   🗺️ Spatial Layout: \(spatialLayout.walls.count) walls with detailed positioning")
+                } else {
+                    // Fallback to demo data if no scan available
+                    let demoRoomDimensions = RoomDimensions(width: 4.0, height: 2.8, depth: 3.0)
+                    let demoRoomFeatures = RoomFeatures(walls: 4, doors: 1, windows: 2, openings: 0)
+                    lidarData = LIDARData(roomDimensions: demoRoomDimensions, roomType: "living_room", roomFeatures: demoRoomFeatures, spatialLayout: nil)
+                    print("⚠️ No scanned data available, using demo room data: \(demoRoomDimensions.width)x\(demoRoomDimensions.depth)x\(demoRoomDimensions.height)m")
+                }
 
                 print("🔄 Step 4/4: Submitting design request to API...")
                 let id = try await apiService.submitDesignRequest(
-                    lidarData: demoLidarData,
+                    lidarData: lidarData,
                     styleReference: styleReference,
                     referenceImages: imageDataArray
                 )
@@ -393,7 +419,8 @@ struct ProcessingView: View {
             instagramLink: "https://instagram.com/example",
             pinterestLink: "",
             styleKeywords: ["Modern", "Minimalist"],
-            userThoughts: "I want a cozy reading corner with natural light"
+            userThoughts: "I want a cozy reading corner with natural light",
+            scannedRoomData: nil
         )
     }
 }

@@ -2,6 +2,7 @@ import SwiftUI
 import PhotosUI
 
 struct StyleInputView: View {
+    var scannedRoomData: RoomScanData?
 
     @State private var selectedImages: [PhotosPickerItem] = []
     @State private var referenceImages: [UIImage] = []
@@ -170,7 +171,8 @@ struct StyleInputView: View {
                     instagramLink: instagramLink,
                     pinterestLink: pinterestLink,
                     styleKeywords: Array(selectedStyleKeywords),
-                    userThoughts: userThoughts
+                    userThoughts: userThoughts,
+                    scannedRoomData: scannedRoomData
                 )) {
                     Text("Generate Design")
                         .font(.headline)
