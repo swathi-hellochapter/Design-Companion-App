@@ -8,7 +8,7 @@ class APIService: ObservableObject {
 
     private let supabaseURL = Config.Supabase.url
     private let supabaseKey = Config.Supabase.anonKey
-    private let n8nWebhookURL = Config.N8N.webhookURL
+    private let n8nWebhookURL = Config.N8N.currentWebhookURL
 
     private init() {
         print("🚀 APIService initialized")
@@ -51,7 +51,8 @@ class APIService: ObservableObject {
             images: imageUrls,
             instagramUrl: styleReference.instagramUrl,
             pinterestUrl: styleReference.pinterestUrl,
-            styleKeywords: styleReference.styleKeywords
+            styleKeywords: styleReference.styleKeywords,
+            userThoughts: styleReference.userThoughts
         )
 
         let finalRequest = DesignRequest(
