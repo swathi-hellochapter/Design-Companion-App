@@ -71,23 +71,20 @@ struct LIDARPoint: Codable {
 
 struct StyleReference: Codable {
     let images: [String]
-    let instagramUrl: String?
-    let pinterestUrl: String?
+    let urls: [String]
     let styleKeywords: [String]
     let userThoughts: String?
 
-    init(images: [String] = [], instagramUrl: String? = nil, pinterestUrl: String? = nil, styleKeywords: [String] = [], userThoughts: String? = nil) {
+    init(images: [String] = [], urls: [String] = [], styleKeywords: [String] = [], userThoughts: String? = nil) {
         self.images = images
-        self.instagramUrl = instagramUrl
-        self.pinterestUrl = pinterestUrl
+        self.urls = urls
         self.styleKeywords = styleKeywords
         self.userThoughts = userThoughts
     }
 
     enum CodingKeys: String, CodingKey {
         case images
-        case instagramUrl = "instagram_url"
-        case pinterestUrl = "pinterest_url"
+        case urls
         case styleKeywords = "style_keywords"
         case userThoughts = "user_thoughts"
     }

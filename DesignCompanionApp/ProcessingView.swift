@@ -36,7 +36,7 @@ struct ProcessingView: View {
             }
         }
         .background(ChapterColors.background)
-        .navigationTitle("Generating Design")
+        .navigationTitle(Config.demoMode ? "Generating Design (Demo)" : "Generating Design")
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
         .onAppear {
@@ -260,22 +260,34 @@ struct ProcessingView: View {
     }
     
     private func submitDesignRequest() {
+        // Check if demo mode is enabled
+        if Config.demoMode {
+            print("🎭 DEMO MODE: Skipping API call, using sample designs")
+            simulateDemoProcessing()
+            return
+        }
+
         let trimmedThoughts = userThoughts.trimmingCharacters(in: .whitespacesAndNewlines)
+        // Combine all reference URLs into a single array
+        let allUrls = [instagramLink, pinterestLink]
+            .filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+            .flatMap { $0.components(separatedBy: "\n") }
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+
         print("🔍 Creating StyleReference with:")
-        print("   📱 Instagram: \(instagramLink.isEmpty ? "none" : instagramLink)")
-        print("   📌 Pinterest: \(pinterestLink.isEmpty ? "none" : pinterestLink)")
+        print("   🔗 URLs: \(allUrls.isEmpty ? "none" : "\(allUrls)")")
         print("   🏷️ Keywords: \(styleKeywords)")
         print("   💭 User Thoughts: \(trimmedThoughts.isEmpty ? "none" : trimmedThoughts)")
-        
+
         let styleReference = StyleReference(
-            instagramUrl: instagramLink.isEmpty ? nil : instagramLink,
-            pinterestUrl: pinterestLink.isEmpty ? nil : pinterestLink,
+            urls: allUrls,
             styleKeywords: styleKeywords,
             userThoughts: trimmedThoughts.isEmpty ? nil : trimmedThoughts
         )
-        
+
         print("✅ StyleReference created with userThoughts: \(styleReference.userThoughts ?? "nil")")
-        
+
         Task {
             do {
                 print("🔄 === STARTING DESIGN REQUEST SUBMISSION ===")
@@ -407,6 +419,36 @@ struct ProcessingView: View {
                     print("❌ Polling error: \(error)")
                     print("❌ Polling error type: \(type(of: error))")
                 }
+            }
+        }
+    }
+
+    private func simulateDemoProcessing() {
+        Task {
+            // Simulate the processing steps for demo
+            for step in 0..<processingSteps.count {
+                await MainActor.run {
+                    processingStep = step
+                }
+                try? await Task.sleep(nanoseconds: 800_000_000) // 0.8 seconds per step
+            }
+
+            // Create demo response with sample images
+            let demoResponse = DesignResponse(
+                id: UUID().uuidString,
+                requestId: "demo-request-123",
+                generatedImages: Config.DemoData.sampleDesignImages,
+                status: .completed,
+                createdAt: Date(),
+                completedAt: Date(),
+                error: nil
+            )
+
+            await MainActor.run {
+                print("🎭 Demo processing completed - navigating to results")
+                designResponse = demoResponse
+                isProcessing = false
+                showResults = true
             }
         }
     }

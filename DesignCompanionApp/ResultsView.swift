@@ -16,8 +16,6 @@ struct ResultsView: View {
     @State private var isDownloading = false
     @State private var showingSaveAlert = false
     @State private var saveAlertMessage = ""
-    @State private var singleImageToShare: UIImage?
-    @State private var showSingleImageShare = false
     
     var body: some View {
         VStack(spacing: 20) {
@@ -64,21 +62,9 @@ struct ResultsView: View {
                 // Share and Generate More Row
                 HStack(spacing: 12) {
                     // Share Button
-                    Menu {
-                        Button("Share All Images") {
-                            shareDesigns()
-                        }
-
-                        if let designResponse = designResponse,
-                           let imageUrls = designResponse.generatedImages,
-                           !imageUrls.isEmpty {
-                            ForEach(Array(imageUrls.enumerated()), id: \.offset) { index, _ in
-                                Button("Share Design \(index + 1)") {
-                                    shareSingleImage(at: index)
-                                }
-                            }
-                        }
-                    } label: {
+                    Button(action: {
+                        shareDesigns()
+                    }) {
                         Image(systemName: "square.and.arrow.up")
                             .font(.title2)
                             .foregroundColor(ChapterColors.accent)
@@ -115,11 +101,6 @@ struct ResultsView: View {
         .sheet(isPresented: $showShareSheet) {
             if !downloadedImages.isEmpty {
                 ShareSheet(items: createShareItems(for: downloadedImages, isMultiple: true))
-            }
-        }
-        .sheet(isPresented: $showSingleImageShare) {
-            if let image = singleImageToShare {
-                ShareSheet(items: createShareItems(for: [image], isMultiple: false))
             }
         }
         .alert("Save Status", isPresented: $showingSaveAlert) {
@@ -307,42 +288,17 @@ struct ResultsView: View {
         }
     }
 
-    private func shareSingleImage(at index: Int) {
-        guard let designResponse = designResponse,
-              let imageUrls = designResponse.generatedImages,
-              index < imageUrls.count else {
-            saveAlertMessage = "No image to share"
-            showingSaveAlert = true
-            return
-        }
-
-        guard let url = URL(string: imageUrls[index]) else { return }
-
-        isDownloading = true
-
-        URLSession.shared.dataTask(with: url) { data, response, error in
-            DispatchQueue.main.async {
-                isDownloading = false
-                if let data = data, let image = UIImage(data: data) {
-                    singleImageToShare = image
-                    showSingleImageShare = true
-                } else {
-                    saveAlertMessage = "Failed to load image for sharing"
-                    showingSaveAlert = true
-                }
-            }
-        }.resume()
-    }
 
     private func createShareItems(for images: [UIImage], isMultiple: Bool) -> [Any] {
         let shareText = isMultiple ?
-            "Check out my AI-generated interior designs! 🏠✨" :
-            "Check out my AI-generated interior design! 🏠✨"
+            "Check out my AI-generated interior designs from Chapter ! 🏠✨" :
+            "Check out my AI-generated interior designs from Chapter! 🏠✨"
 
         var shareItems: [Any] = [shareText]
         shareItems.append(contentsOf: images)
         return shareItems
     }
+
 }
 
 struct ImageViewerView: View {
@@ -378,6 +334,7 @@ struct ImageViewerView: View {
         }
     }
 }
+
 
 struct ShareSheet: UIViewControllerRepresentable {
     let items: [Any]

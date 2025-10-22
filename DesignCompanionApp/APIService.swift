@@ -28,8 +28,7 @@ class APIService: ObservableObject {
         if !referenceImages.isEmpty {
             print("   Image sizes: \(referenceImages.map { "\($0.count) bytes" })")
         }
-        print("📍 Instagram: \(styleReference.instagramUrl ?? "none")")
-        print("📍 Pinterest: \(styleReference.pinterestUrl ?? "none")")
+        print("📍 URLs: \(styleReference.urls.isEmpty ? "none" : "\(styleReference.urls)")")
         print("🏷️ Style Keywords: \(styleReference.styleKeywords)")
         print("💭 User Thoughts: \(styleReference.userThoughts ?? "none")")
 
@@ -49,8 +48,7 @@ class APIService: ObservableObject {
         // Update style reference with uploaded image URLs
         let updatedStyleReference = StyleReference(
             images: imageUrls,
-            instagramUrl: styleReference.instagramUrl,
-            pinterestUrl: styleReference.pinterestUrl,
+            urls: styleReference.urls,
             styleKeywords: styleReference.styleKeywords,
             userThoughts: styleReference.userThoughts
         )
