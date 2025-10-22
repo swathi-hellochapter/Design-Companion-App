@@ -14,13 +14,14 @@ struct Config {
 
     struct N8N {
         // Production webhook
-        static let webhookURL = "https://chapterdesignapp.app.n8n.cloud/webhook/chapter-design-webhook"
+        static let webhookURL = "https://chapterdesignapp.app.n8n.cloud/webhook/2a283622-c885-4b2b-8765-ccf7343dc001"
+        
 
         // Test webhook for development
         static let testWebhookURL = "https://chapterdesignapp.app.n8n.cloud/webhook-test/2a283622-c885-4b2b-8765-ccf7343dc001"
 
         // Current webhook to use (switch for testing)
-        static let currentWebhookURL = testWebhookURL
+        static let currentWebhookURL = webhookURL
     }
 
     struct Storage {
