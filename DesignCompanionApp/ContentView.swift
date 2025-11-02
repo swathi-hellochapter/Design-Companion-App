@@ -9,21 +9,17 @@ struct ContentView: View {
                 ChapterColors.background
                     .ignoresSafeArea()
 
-                VStack(spacing: 40) {
+                VStack(spacing: 20) {
                     Spacer()
 
                     // Chapter Logo
                     VStack(spacing: 20) {
-                        RoundedRectangle(cornerRadius: 20)
-                            .fill(ChapterColors.accent)
-                            .frame(width: 120, height: 120)
-                            .overlay(
-                                Text("C")
-                                    .font(.system(size: 48, weight: .bold))
-                                    .foregroundColor(.white)
-                            )
+                        Image("ChapterLogo")
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(width: 180, height: 180)
 
-                        Text("Chapter")
+                        Text("Start a new Chapter!")
                             .font(.system(size: 36, weight: .bold, design: .default))
                             .foregroundColor(ChapterColors.text)
                     }
@@ -31,8 +27,8 @@ struct ContentView: View {
                     // Tagline
                     VStack(spacing: 12) {
                         Text("Interior Design. Reimagined.")
-                            .font(.title2)
-                            .fontWeight(.medium)
+                            .font(.title3)
+                            .fontWeight(.light)
                             .foregroundColor(ChapterColors.text)
 
                         Text("Transform your space with AI-powered design")
