@@ -38,7 +38,7 @@ struct ProcessingView: View {
         .background(ChapterColors.background)
         .navigationTitle(Config.demoMode ? "Generating Design (Demo)" : "Generating Design")
         .navigationBarTitleDisplayMode(.inline)
-        .navigationBarBackButtonHidden(true)
+        .navigationBarBackButtonHidden(isProcessing)
         .onAppear {
             print("🚀 ProcessingView appeared - starting design generation process")
             print("📋 Input Summary:")
@@ -65,16 +65,23 @@ struct ProcessingView: View {
                 ProgressView()
                     .scaleEffect(2)
                     .tint(ChapterColors.accent)
-                
+
                 Text("Creating Your Design...")
                     .font(.title2)
                     .fontWeight(.bold)
                     .foregroundColor(ChapterColors.text)
-                
+
                 Text(processingSteps[processingStep])
                     .font(.body)
                     .foregroundColor(ChapterColors.secondaryText)
                     .multilineTextAlignment(.center)
+
+                // Encouraging message
+                Text("Great things take time ✨\nThis might take 1-2 minutes...")
+                    .font(.subheadline)
+                    .foregroundColor(ChapterColors.accent)
+                    .multilineTextAlignment(.center)
+                    .padding(.top, 8)
             }
             
             // Progress indicator
@@ -186,7 +193,8 @@ struct ProcessingView: View {
                 instagramLink: instagramLink,
                 pinterestLink: pinterestLink,
                 styleKeywords: styleKeywords,
-                userThoughts: userThoughts
+                userThoughts: userThoughts,
+                scannedRoomData: scannedRoomData
             )) {
                 Text("View Your Designs")
                     .font(.headline)
@@ -245,7 +253,7 @@ struct ProcessingView: View {
     
     private func startProcessingAnimation() {
         print("🎬 Starting processing animation with \(processingSteps.count) steps")
-        Timer.scheduledTimer(withTimeInterval: 2.0, repeats: true) { timer in
+        Timer.scheduledTimer(withTimeInterval: 12.0, repeats: true) { timer in
             if processingStep < processingSteps.count - 1 {
                 withAnimation {
                     processingStep += 1

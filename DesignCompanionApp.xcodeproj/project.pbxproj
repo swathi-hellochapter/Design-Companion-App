@@ -399,11 +399,11 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				INFOPLIST_KEY_LSApplicationQueriesSchemes = "instagram instagram-stories whatsapp";
 				INFOPLIST_KEY_NSCameraUsageDescription = "This app uses the camera to scan rooms for interior design";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "This app uses location for room context";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "This app needs permission to save your generated interior designs to your photo library";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "This app needs access to your photo library to save your generated interior designs to Photos";
-				INFOPLIST_KEY_LSApplicationQueriesSchemes = "instagram instagram-stories whatsapp";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -443,11 +443,11 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				INFOPLIST_KEY_LSApplicationQueriesSchemes = "instagram instagram-stories whatsapp";
 				INFOPLIST_KEY_NSCameraUsageDescription = "This app uses the camera to scan rooms for interior design";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "This app uses location for room context";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "This app needs permission to save your generated interior designs to your photo library";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "This app needs access to your photo library to save your generated interior designs to Photos";
-				INFOPLIST_KEY_LSApplicationQueriesSchemes = "instagram instagram-stories whatsapp";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;

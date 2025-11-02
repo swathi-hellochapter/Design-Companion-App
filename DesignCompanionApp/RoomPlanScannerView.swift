@@ -315,19 +315,23 @@ struct RoomScanView: View {
 struct StyleInputViewWithRoom: View {
     let capturedRoom: CapturedRoom
     @State private var showingSummary = true
+    @State private var finalRoomData: RoomScanData?
 
     var body: some View {
         if showingSummary {
-            RoomScanSummaryView(capturedRoom: capturedRoom) {
+            RoomScanSummaryView(capturedRoom: capturedRoom) { updatedRoomData in
+                finalRoomData = updatedRoomData
                 showingSummary = false
             }
         } else {
-            StyleInputView(scannedRoomData: RoomScanData(from: capturedRoom))
-                .onAppear {
-                    print("🏠 ✅ Navigated to StyleInputView with scanned room data!")
-                    let roomData = RoomScanData(from: capturedRoom)
-                    print("🏠 📊 Room description: \(roomData.roomDescription)")
-                }
+            if let roomData = finalRoomData {
+                StyleInputView(scannedRoomData: roomData)
+                    .onAppear {
+                        print("🏠 ✅ Navigated to StyleInputView with scanned room data!")
+                        print("🏠 📊 Room type: \(roomData.roomType)")
+                        print("🏠 📊 Room description: \(roomData.roomDescription)")
+                    }
+            }
         }
     }
 }
@@ -336,13 +340,24 @@ struct StyleInputViewWithRoom: View {
 @available(iOS 16.0, *)
 struct RoomScanSummaryView: View {
     let capturedRoom: CapturedRoom
-    let onContinue: () -> Void
+    let onContinue: (RoomScanData) -> Void
     @State private var roomData: RoomScanData
+    @State private var selectedRoomType: String
 
-    init(capturedRoom: CapturedRoom, onContinue: @escaping () -> Void) {
+    private let availableRoomTypes = [
+        ("living_room", "Living Room"),
+        ("bedroom", "Bedroom"),
+        ("kitchen", "Kitchen"),
+        ("bathroom", "Bathroom"),
+        ("dining_room", "Dining Room")
+    ]
+
+    init(capturedRoom: CapturedRoom, onContinue: @escaping (RoomScanData) -> Void) {
         self.capturedRoom = capturedRoom
         self.onContinue = onContinue
-        self._roomData = State(initialValue: RoomScanData(from: capturedRoom))
+        let initialData = RoomScanData(from: capturedRoom)
+        self._roomData = State(initialValue: initialData)
+        self._selectedRoomType = State(initialValue: initialData.roomType)
     }
 
     var body: some View {
@@ -369,19 +384,56 @@ struct RoomScanSummaryView: View {
             // Room Details Card
             VStack(spacing: 20) {
                 // Room Type
-                HStack {
-                    Image(systemName: "house.fill")
-                        .foregroundColor(ChapterColors.accent)
-                        .frame(width: 24)
+                if roomData.isRoomTypeAutoDetected {
+                    // Auto-detected - just show it
+                    HStack {
+                        Image(systemName: "house.fill")
+                            .foregroundColor(ChapterColors.accent)
+                            .frame(width: 24)
 
-                    Text("Room Type:")
-                        .foregroundColor(ChapterColors.secondaryText)
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Room Type:")
+                                .foregroundColor(ChapterColors.secondaryText)
+                            Text("Auto-detected ✓")
+                                .font(.caption)
+                                .foregroundColor(ChapterColors.success)
+                        }
 
-                    Spacer()
+                        Spacer()
 
-                    Text(roomData.roomType.replacingOccurrences(of: "_", with: " ").capitalized)
-                        .fontWeight(.semibold)
-                        .foregroundColor(ChapterColors.text)
+                        Text(selectedRoomType.replacingOccurrences(of: "_", with: " ").capitalized)
+                            .fontWeight(.semibold)
+                            .foregroundColor(ChapterColors.text)
+                    }
+                } else {
+                    // Not auto-detected - show picker
+                    VStack(alignment: .leading, spacing: 12) {
+                        HStack {
+                            Image(systemName: "house.fill")
+                                .foregroundColor(ChapterColors.accent)
+                                .frame(width: 24)
+
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Room Type:")
+                                    .foregroundColor(ChapterColors.secondaryText)
+                                Text("Please select your room type")
+                                    .font(.caption)
+                                    .foregroundColor(ChapterColors.accent)
+                            }
+                        }
+
+                        Picker("Select Room Type", selection: $selectedRoomType) {
+                            ForEach(availableRoomTypes, id: \.0) { roomType in
+                                Text(roomType.1).tag(roomType.0)
+                            }
+                        }
+                        .pickerStyle(.menu)
+                        .accentColor(ChapterColors.accent)
+                        .onChange(of: selectedRoomType) { newValue in
+                            roomData.roomType = newValue
+                            print("🏠 User manually selected room type: \(newValue)")
+                        }
+                    }
                 }
 
                 Divider()
@@ -457,7 +509,8 @@ struct RoomScanSummaryView: View {
             // Continue Button
             Button(action: {
                 print("🏠 User tapped 'Let's Style This Room'")
-                onContinue()
+                print("🏠 Final room type: \(roomData.roomType)")
+                onContinue(roomData)
             }) {
                 HStack {
                     Image(systemName: "paintbrush.fill")

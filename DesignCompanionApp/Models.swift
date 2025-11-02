@@ -185,28 +185,33 @@ struct DesignResponse: Codable {
 @available(iOS 16.0, *)
 struct RoomScanData {
     let capturedRoom: CapturedRoom
-    let roomDescription: String
     let dimensions: RoomDimensions
-    let roomType: String
+    var roomType: String
     let features: RoomFeatures
     let spatialData: RoomSpatialData
+    let isRoomTypeAutoDetected: Bool
 
-    init(from capturedRoom: CapturedRoom) {
-        self.capturedRoom = capturedRoom
-        self.roomType = Self.determineRoomType(from: capturedRoom)
-        self.dimensions = Self.extractDimensions(from: capturedRoom)
-        self.features = Self.extractFeatures(from: capturedRoom)
-        self.spatialData = Self.extractSpatialData(from: capturedRoom)
-        self.roomDescription = Self.generateDescription(
+    var roomDescription: String {
+        Self.generateDescription(
             roomType: roomType,
             dimensions: dimensions,
             features: features
         )
     }
 
+    init(from capturedRoom: CapturedRoom) {
+        self.capturedRoom = capturedRoom
+        let (detectedRoomType, wasAutoDetected) = Self.determineRoomType(from: capturedRoom)
+        self.roomType = detectedRoomType
+        self.isRoomTypeAutoDetected = wasAutoDetected
+        self.dimensions = Self.extractDimensions(from: capturedRoom)
+        self.features = Self.extractFeatures(from: capturedRoom)
+        self.spatialData = Self.extractSpatialData(from: capturedRoom)
+    }
+
     // MARK: - Room Analysis Methods
 
-    private static func determineRoomType(from room: CapturedRoom) -> String {
+    private static func determineRoomType(from room: CapturedRoom) -> (String, Bool) {
         // Use RoomPlan's sections to detect room type (iOS 17+)
         if #available(iOS 17.0, *) {
             // Check if room has sections with labels
@@ -214,19 +219,19 @@ struct RoomScanData {
                 switch section.label {
                 case .bedroom:
                     print("🏠 ✅ Detected room type: bedroom")
-                    return "bedroom"
+                    return ("bedroom", true)
                 case .kitchen:
                     print("🏠 ✅ Detected room type: kitchen")
-                    return "kitchen"
+                    return ("kitchen", true)
                 case .bathroom:
                     print("🏠 ✅ Detected room type: bathroom")
-                    return "bathroom"
+                    return ("bathroom", true)
                 case .diningRoom:
                     print("🏠 ✅ Detected room type: dining_room")
-                    return "dining_room"
+                    return ("dining_room", true)
                 case .livingRoom:
                     print("🏠 ✅ Detected room type: living_room")
-                    return "living_room"
+                    return ("living_room", true)
                 @unknown default:
                     print("🏠 ⚠️ Unknown room section detected")
                     break
@@ -245,13 +250,16 @@ struct RoomScanData {
         print("🏠 📏 Room area: \(roomArea) sq m")
 
         // Basic inference based on size and features
+        let inferredType: String
         if roomArea < 8 {
-            return "bathroom"
+            inferredType = "bathroom"
         } else if roomArea < 15 {
-            return "bedroom"
+            inferredType = "bedroom"
         } else {
-            return "living_room"
+            inferredType = "living_room"
         }
+
+        return (inferredType, false)
     }
 
     private static func extractDimensions(from room: CapturedRoom) -> RoomDimensions {

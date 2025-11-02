@@ -3,6 +3,9 @@ import PhotosUI
 
 struct StyleInputView: View {
     var scannedRoomData: RoomScanData?
+    var fromResults: Bool = false
+
+    @Environment(\.dismiss) private var dismiss
 
     @State private var selectedImages: [PhotosPickerItem] = []
     @State private var referenceImages: [UIImage] = []
@@ -10,6 +13,7 @@ struct StyleInputView: View {
     @State private var newLinkInput = ""
     @State private var selectedStyleKeywords: Set<String> = []
     @State private var userThoughts = ""
+    @State private var navigateToHome = false
 
     private let availableStyleKeywords = [
         "Modern", "Minimalist", "Scandinavian",
@@ -297,6 +301,20 @@ struct StyleInputView: View {
         .background(ChapterColors.background)
         .navigationTitle("Style References")
         .navigationBarTitleDisplayMode(.inline)
+        .navigationBarBackButtonHidden(fromResults)
+        .toolbar {
+            if fromResults {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    NavigationLink(destination: ContentView()) {
+                        HStack(spacing: 4) {
+                            Image(systemName: "arrow.uturn.left")
+                            Text("New Scan")
+                        }
+                        .foregroundColor(ChapterColors.accent)
+                    }
+                }
+            }
+        }
         .onTapGesture {
             // Dismiss keyboard when tapping outside
             hideKeyboard()

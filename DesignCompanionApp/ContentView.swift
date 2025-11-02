@@ -92,6 +92,7 @@ struct ContentView: View {
                     .padding(.bottom, 40)
                 }
             }
+            .navigationBarBackButtonHidden(true)
         }
     }
 }

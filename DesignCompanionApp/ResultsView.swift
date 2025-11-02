@@ -8,7 +8,8 @@ struct ResultsView: View {
     let pinterestLink: String
     let styleKeywords: [String]
     let userThoughts: String
-    
+    let scannedRoomData: RoomScanData?
+
     @State private var selectedImageIndex = 0
     @State private var showImageViewer = false
     @State private var showShareSheet = false
@@ -16,7 +17,8 @@ struct ResultsView: View {
     @State private var isDownloading = false
     @State private var showingSaveAlert = false
     @State private var saveAlertMessage = ""
-    
+    @State private var showingDesignReport = false
+
     var body: some View {
         VStack(spacing: 20) {
             Text("Your AI Designs")
@@ -41,6 +43,23 @@ struct ResultsView: View {
             
             // Actions
             VStack(spacing: 12) {
+                // Design Report Button
+                Button(action: {
+                    showingDesignReport = true
+                }) {
+                    HStack {
+                        Image(systemName: "doc.text.fill")
+                        Text("View Design Report")
+                    }
+                    .font(.headline)
+                    .foregroundColor(.white)
+                    .padding()
+                    .frame(maxWidth: .infinity)
+                    .background(ChapterColors.accent)
+                    .cornerRadius(25)
+                }
+                .padding(.horizontal)
+
                 // Save to Photos Button
                 Button(action: {
                     saveAllImagesToPhotos()
@@ -50,11 +69,15 @@ struct ResultsView: View {
                         Text(isDownloading ? "Saving..." : "Save to Photos")
                     }
                     .font(.headline)
-                    .foregroundColor(.white)
+                    .foregroundColor(ChapterColors.accent)
                     .padding()
                     .frame(maxWidth: .infinity)
-                    .background(ChapterColors.accent)
+                    .background(ChapterColors.cardBackground)
                     .cornerRadius(25)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 25)
+                            .stroke(ChapterColors.border, lineWidth: 1)
+                    )
                 }
                 .disabled(isDownloading)
                 .padding(.horizontal)
@@ -77,20 +100,20 @@ struct ResultsView: View {
                             )
                     }
 
-                    // Generate More Button
-                    Button("Generate More Variations") {
-                        print("Generating more...")
+                    // Re-Style Button
+                    NavigationLink(destination: StyleInputView(scannedRoomData: scannedRoomData, fromResults: true)) {
+                        Text("Re-Style This Room")
+                            .font(.headline)
+                            .foregroundColor(ChapterColors.accent)
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .background(ChapterColors.cardBackground)
+                            .cornerRadius(25)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 25)
+                                    .stroke(ChapterColors.border, lineWidth: 1)
+                            )
                     }
-                    .font(.headline)
-                    .foregroundColor(ChapterColors.accent)
-                    .padding()
-                    .frame(maxWidth: .infinity)
-                    .background(ChapterColors.cardBackground)
-                    .cornerRadius(25)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 25)
-                            .stroke(ChapterColors.border, lineWidth: 1)
-                    )
                 }
                 .padding(.horizontal)
             }
@@ -98,6 +121,7 @@ struct ResultsView: View {
         .background(ChapterColors.background)
         .navigationTitle("Results")
         .navigationBarTitleDisplayMode(.inline)
+        .navigationBarBackButtonHidden(true)
         .sheet(isPresented: $showShareSheet) {
             if !downloadedImages.isEmpty {
                 ShareSheet(items: createShareItems(for: downloadedImages, isMultiple: true))
@@ -107,6 +131,15 @@ struct ResultsView: View {
             Button("OK") { }
         } message: {
             Text(saveAlertMessage)
+        }
+        .sheet(isPresented: $showingDesignReport) {
+            DesignReportView(
+                scannedRoomData: scannedRoomData,
+                styleKeywords: styleKeywords,
+                userThoughts: userThoughts,
+                referenceImages: images,
+                referenceUrls: parseReferenceUrls()
+            )
         }
     }
 
@@ -299,6 +332,20 @@ struct ResultsView: View {
         return shareItems
     }
 
+    private func parseReferenceUrls() -> [String] {
+        var urls: [String] = []
+
+        if !instagramLink.isEmpty {
+            urls.append(contentsOf: instagramLink.components(separatedBy: "\n").filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty })
+        }
+
+        if !pinterestLink.isEmpty {
+            urls.append(contentsOf: pinterestLink.components(separatedBy: "\n").filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty })
+        }
+
+        return urls
+    }
+
 }
 
 struct ImageViewerView: View {
@@ -363,7 +410,8 @@ struct ShareSheet: UIViewControllerRepresentable {
             instagramLink: "",
             pinterestLink: "",
             styleKeywords: ["Modern", "Scandinavian"],
-            userThoughts: "I love natural textures and want a peaceful atmosphere"
+            userThoughts: "I love natural textures and want a peaceful atmosphere",
+            scannedRoomData: nil
         )
     }
 }
