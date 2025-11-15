@@ -2,6 +2,17 @@ import SwiftUI
 import RoomPlan
 
 struct ContentView: View {
+    @State private var currentWordIndex = 0
+    @State private var animateWord = false
+
+    private let rotatingWords = [
+        "Reimagined",
+        "Transformed",
+        "Elevated",
+        "Personalized",
+        "Simplified"
+    ]
+
     var body: some View {
         NavigationStack {
             ZStack {
@@ -13,7 +24,7 @@ struct ContentView: View {
                     Spacer()
 
                     // Chapter Logo
-                    VStack(spacing: 20) {
+                    VStack(spacing: 8) {
                         Image("ChapterLogo")
                             .resizable()
                             .aspectRatio(contentMode: .fit)
@@ -26,10 +37,19 @@ struct ContentView: View {
 
                     // Tagline
                     VStack(spacing: 12) {
-                        Text("Interior Design. Reimagined.")
-                            .font(.title3)
-                            .fontWeight(.light)
-                            .foregroundColor(ChapterColors.text)
+                        HStack(spacing: 4) {
+                            Text("Interior Design.")
+                                .font(.title3)
+                                .fontWeight(.light)
+                                .foregroundColor(ChapterColors.text)
+
+                            Text(rotatingWords[currentWordIndex])
+                                .font(.title3)
+                                .fontWeight(.light)
+                                .foregroundColor(ChapterColors.accent)
+                                .opacity(animateWord ? 1 : 0)
+                                .offset(y: animateWord ? 0 : 10)
+                        }
 
                         Text("Transform your space with AI-powered design")
                             .font(.body)
@@ -89,6 +109,34 @@ struct ContentView: View {
                 }
             }
             .navigationBarBackButtonHidden(true)
+            .onAppear {
+                startWordRotation()
+            }
+        }
+    }
+
+    private func startWordRotation() {
+        // Initial animation
+        withAnimation(.easeInOut(duration: 0.5)) {
+            animateWord = true
+        }
+
+        // Start timer to rotate words
+        Timer.scheduledTimer(withTimeInterval: 2.0, repeats: true) { _ in
+            // Fade out
+            withAnimation(.easeInOut(duration: 0.3)) {
+                animateWord = false
+            }
+
+            // Change word after fade out
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                currentWordIndex = (currentWordIndex + 1) % rotatingWords.count
+
+                // Fade in
+                withAnimation(.easeInOut(duration: 0.5)) {
+                    animateWord = true
+                }
+            }
         }
     }
 }

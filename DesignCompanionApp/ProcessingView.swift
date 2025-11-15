@@ -77,7 +77,7 @@ struct ProcessingView: View {
                     .multilineTextAlignment(.center)
 
                 // Encouraging message
-                Text("Great things take time ✨\nThis might take 1-2 minutes...")
+                Text("Great things take time ✨\nYour designs will be ready in 1-2 minutes...")
                     .font(.subheadline)
                     .foregroundColor(ChapterColors.accent)
                     .multilineTextAlignment(.center)
