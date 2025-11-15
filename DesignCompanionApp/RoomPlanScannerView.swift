@@ -449,7 +449,11 @@ struct RoomScanSummaryView: View {
 
                     Spacer()
 
-                    Text("\(String(format: "%.1f", roomData.dimensions.width))m × \(String(format: "%.1f", roomData.dimensions.depth))m × \(String(format: "%.1f", roomData.dimensions.height))m")
+                    Text(MeasurementFormatter.formatDimensions(
+                        width: roomData.dimensions.width,
+                        depth: roomData.dimensions.depth,
+                        height: roomData.dimensions.height
+                    ))
                         .fontWeight(.semibold)
                         .foregroundColor(ChapterColors.text)
                 }
@@ -467,7 +471,7 @@ struct RoomScanSummaryView: View {
 
                     Spacer()
 
-                    Text("\(String(format: "%.1f", roomData.dimensions.area)) sq m")
+                    Text(MeasurementFormatter.formatArea(roomData.dimensions.area))
                         .fontWeight(.semibold)
                         .foregroundColor(ChapterColors.text)
                 }

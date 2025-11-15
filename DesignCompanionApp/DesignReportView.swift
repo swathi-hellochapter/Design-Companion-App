@@ -40,8 +40,8 @@ struct DesignReportView: View {
                         if let roomData = scannedRoomData {
                             VStack(alignment: .leading, spacing: 8) {
                                 InfoRow(label: "Room Type", value: roomData.roomType.replacingOccurrences(of: "_", with: " ").capitalized)
-                                InfoRow(label: "Dimensions", value: String(format: "%.1fm × %.1fm × %.1fm", roomData.dimensions.width, roomData.dimensions.depth, roomData.dimensions.height))
-                                InfoRow(label: "Floor Area", value: String(format: "%.1f sq m", roomData.dimensions.area))
+                                InfoRow(label: "Dimensions", value: MeasurementFormatter.formatDimensions(width: roomData.dimensions.width, depth: roomData.dimensions.depth, height: roomData.dimensions.height))
+                                InfoRow(label: "Floor Area", value: MeasurementFormatter.formatArea(roomData.dimensions.area))
                                 InfoRow(label: "Features", value: "\(roomData.features.windows) windows, \(roomData.features.doors) doors")
                             }
                         } else {
@@ -247,9 +247,9 @@ struct DesignReportView: View {
 
         if let roomData = scannedRoomData {
             let roomType = roomData.roomType.replacingOccurrences(of: "_", with: " ")
-            let area = String(format: "%.1f", roomData.dimensions.area)
+            let area = MeasurementFormatter.formatArea(roomData.dimensions.area)
 
-            rationale += "Based on your \(roomType) with \(area) square meters of space"
+            rationale += "Based on your \(roomType) with \(area) of space"
 
             if roomData.features.windows > 0 {
                 rationale += " and \(roomData.features.windows) \(roomData.features.windows == 1 ? "window" : "windows") providing natural light"
@@ -329,8 +329,8 @@ struct DesignReportView: View {
                     }
 
                     InfoRow(label: "Room Type", value: roomData.roomType.replacingOccurrences(of: "_", with: " ").capitalized)
-                    InfoRow(label: "Dimensions", value: String(format: "%.1fm × %.1fm × %.1fm", roomData.dimensions.width, roomData.dimensions.depth, roomData.dimensions.height))
-                    InfoRow(label: "Floor Area", value: String(format: "%.1f sq m", roomData.dimensions.area))
+                    InfoRow(label: "Dimensions", value: MeasurementFormatter.formatDimensions(width: roomData.dimensions.width, depth: roomData.dimensions.depth, height: roomData.dimensions.height))
+                    InfoRow(label: "Floor Area", value: MeasurementFormatter.formatArea(roomData.dimensions.area))
                 }
                 .padding()
                 .background(ChapterColors.cardBackground)

@@ -756,13 +756,15 @@ struct RoomScanData {
     }
 
     private static func generateDescription(roomType: String, dimensions: RoomDimensions, features: RoomFeatures) -> String {
-        let formattedWidth = String(format: "%.1f", dimensions.width)
-        let formattedDepth = String(format: "%.1f", dimensions.depth)
-        let formattedHeight = String(format: "%.1f", dimensions.height)
-        let formattedArea = String(format: "%.1f", dimensions.area)
+        let formattedDimensions = MeasurementFormatter.formatDimensions(
+            width: dimensions.width,
+            depth: dimensions.depth,
+            height: dimensions.height
+        )
+        let formattedArea = MeasurementFormatter.formatArea(dimensions.area)
 
-        var description = "\(formattedWidth)m x \(formattedDepth)m x \(formattedHeight)m \(roomType.replacingOccurrences(of: "_", with: " "))"
-        description += " with total floor area of \(formattedArea) square meters."
+        var description = "\(formattedDimensions) \(roomType.replacingOccurrences(of: "_", with: " "))"
+        description += " with total floor area of \(formattedArea)."
 
         // Add architectural features
         var featuresArray: [String] = []
